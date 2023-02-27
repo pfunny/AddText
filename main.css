@@ -123,6 +123,7 @@ input[type=number] {
 	input[type=color],
 	input[type=number] {
 		width: 9rem;
+		height: 3 rem;
 	}
 }
 
