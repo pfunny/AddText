@@ -10,8 +10,7 @@
     border: none;
     border-radius: 0.25rem;
     padding: 0 1rem;
-    /*min-width: 64px;*/
-    height: 3rem;
+    height: 2.25rem;
     vertical-align: middle;
     text-align: center;
     text-overflow: ellipsis;
@@ -22,7 +21,7 @@
     font-family: var(--pure-material-font, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
     font-size: 0.875rem;
     font-weight: 700;
-    line-height: 3rem;
+    line-height: 2.25rem;
     overflow: hidden;
     outline: none;
     cursor: pointer;
@@ -30,6 +29,14 @@
 	text-decoration: none;
 	margin-left: 0.5rem;
 	margin-right: 0.5rem;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), 
+(min-resolution: 192dpi) {   
+	.material {
+		height: 3rem;
+		line-height: 3rem;
+	}
 }
 
 .material::-moz-focus-inner {

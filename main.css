@@ -59,17 +59,17 @@ summary:focus-visible {
 }
 
 .header-image {	
-	width: 230px;
-	height: 50px;
+	width: 14.375rem;
+	height: 3.125rem;
 }
 
-@media (-webkit-min-device-pixel-ratio: 2), 
+/*@media (-webkit-min-device-pixel-ratio: 2), 
 (min-resolution: 192dpi) {
 	.header-image {	
 		width: 28.75rem;
 		height: 6.25rem;
 }
-}
+}*/
 
 @-moz-document url-prefix() {
 	.header-image {
