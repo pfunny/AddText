@@ -334,6 +334,13 @@ h1 {
 	width: 28rem;	
 }
 
+@media (-webkit-min-device-pixel-ratio: 2), 
+(min-resolution: 192dpi) {
+	width: 25rem;
+}
+
+
+
 input[type="checkbox"]{
 	background-color: var(--teal);
 }
