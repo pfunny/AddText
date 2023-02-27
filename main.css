@@ -141,7 +141,7 @@ select {
 }
 
 input[type=color] {
-	border: 0;
+	border: 1px solid var(--inputborder);
 }
 
 label {
