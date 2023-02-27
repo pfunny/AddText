@@ -58,11 +58,25 @@ summary:focus-visible {
 	outline: none;
 }
 
+.header-image {	
+	width: 230px;
+	height: 50px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), 
+(min-resolution: 192dpi) {
+	.header-image {	
+		width: 28.75rem;
+		height: 6.25rem;
+}
+}
+
 @-moz-document url-prefix() {
 	.header-image {
 		display: block;
 	}
 }
+
 
 body {
 	font-family: 'Montserrat', Verdana, Arial, Helvetica, sans-serif;	
@@ -304,10 +318,6 @@ h1 {
 	margin-top: 1.3rem;
 	margin-bottom: 1.3rem;
 	width: 28rem;	
-}
-
-.editoptions {
-	width: 10rem;
 }
 
 input[type="checkbox"]{
