@@ -21,7 +21,7 @@ html {
 @media (-webkit-min-device-pixel-ratio: 2), 
        (min-resolution: 192dpi) {   
   html { 
-    font-size: 150%; 
+    font-size: 32px; 
   } 
 }
 
