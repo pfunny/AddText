@@ -1,0 +1,54 @@
+<html>	
+	<style>
+
+.card.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.thumbnail {
+  flex: 1 0 calc(50% - 10px);
+  margin: 10px;
+  position: relative;
+}
+
+canvas {
+  background-color: red;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+		
+	</style>
+	
+	
+	<body>
+		<div class="card container">
+			<h2>Podgląd miniaturek</h2>
+			<div class="thumbnailscontainer">								
+				<div id="croppedDiv" class="thumbnail">
+					<h3>Vinted</h3>
+					<canvas class="thumb" width="200" height="300" id="cropped" ></canvas>							
+				</div>
+				
+				<div id="croppedDivOlx" class="thumbnail">
+					<h3>Olx</h3>
+					<canvas class="thumb" width="216" height="152" id="croppedOlx"></canvas>							
+				</div>
+				
+				<div id="croppedDivFB2" class="thumbnail">
+					<h3>Facebook 2 </h3>										
+					<canvas class="thumb" width="206" height="412" id="croppedFB2"></canvas>							
+				</div>
+				
+				<div id="croppedDivFB5" class="thumbnail">
+					<h3>Facebook 5</h3>
+					<canvas class="thumb" width="225" height="225" id="croppedFB5"></canvas>							
+				</div>							
+			</div>	
+		</div>
+	</body>
+	</html>

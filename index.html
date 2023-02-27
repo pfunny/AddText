@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<script src="DetailsAnimation.js"></script>
+		<link rel="stylesheet" href="startover.css">
+		<link rel="stylesheet" href="main.css">
+		<link rel="stylesheet" href="checkbox.css">
+		<title>Add text to images online</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+		
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+		
+	</head>
+	
+	<body onload="bodyload()" onresize="windowResize()">		
+		<script>
+			//global variables
+			var ddcanvas, ddctx, imggtag;
+			
+			var startX, startY;
+			var texts = [];
+			var selectedText = -1;
+			var displayedText;
+			var textFillColor;
+			var textStrokeColor;
+			var textFontSize, textFontFamily;
+			var listenersAttached = false;
+			var linewidth = 8;
+			var drawborder = true;
+			var imageLoaded = false;
+			var factor;
+			const margin = 0.8;
+			
+			
+			function initVars() {
+				imgtag = document.getElementById("myimage");
+				ddcanvas = document.getElementById("canvascopy");
+				
+				if (typeof (ddcanvas) == "undefined" || ddcanvas == null) {
+					return;
+				}
+				
+				var viewportOffset = ddcanvas.getBoundingClientRect();
+				
+				ddctx = ddcanvas.getContext("2d");				
+				
+				if (!listenersAttached) {
+					ddcanvas.addEventListener("mousedown", function () {
+						handleMouseDown()
+					});
+					ddcanvas.addEventListener("mouseup", function () {
+						handleMouseUp()
+					});
+					ddcanvas.addEventListener("mousemove", function () {
+						handleMouseMove()
+					});
+					ddcanvas.addEventListener("mouseout", function () {
+						handleMouseOut()
+					});
+					listenersAttached = true;
+				}								
+			}					
+			
+			function onFileSelected(files) {
+				var selectedFile = files[0];
+				var reader = new FileReader();
+				var imgtag = document.getElementById("myimage");
+				
+				imgtag.title = selectedFile.name;
+				
+				reader.onload = function (event) {
+					imgtag.src = event.target.result;
+					document.getElementById('imageedit').style.display = 'block';
+					document.getElementById('initwrapper').style.display = 'none';
+				};
+				reader.readAsDataURL(selectedFile);						
+			}
+			
+			function windowResize() {	
+				if(!imageLoaded) {
+					return;
+				}
+				
+				var oldFactor = factor;
+				
+				var oldFontSize = document.getElementById("fontsize").value;
+				var oldBorderWidth = document.getElementById("borderwidth").value;
+				
+				var imgtag = document.getElementById("myimage");
+				var imgheight = imgtag.clientHeight;
+				
+				var h = window.innerHeight - document.getElementById('header').offsetHeight;					
+				factor = h * margin / imgheight;
+				
+				var canvasHeight = imgtag.height * factor;
+				
+				setImageSize();					
+				
+				var divFactor = factor / oldFactor;
+				
+				
+				textFontSize = (oldFontSize * divFactor).toFixed(2);
+				linewidth = (oldBorderWidth * divFactor).toFixed(2);
+				
+				document.getElementById("fontsize").value = parseFloat(textFontSize);
+				document.getElementById("borderwidth").value = parseFloat(linewidth);
+				
+				if(texts!=null && texts.length>0) {
+					var lx = texts[0].x * divFactor;
+					var ly = texts[0].y * divFactor;					
+					texts[0].x = lx;
+					texts[0].y = ly;								
+					draw();								
+					texts[0].width = ddctx.measureText(texts[0].text).width;
+					texts[0].height = parseInt(textFontSize);				
+				}
+				
+			}
+			
+			
+			function setImageSize() {
+				var imgtag = document.getElementById("myimage");				
+				var imgwidth = imgtag.clientWidth;
+				var imgheight = imgtag.clientHeight;	
+				
+				var canvastag = document.getElementById("canvascopy");
+				var ctx = canvastag.getContext("2d");
+				var imagecontainer = document.getElementById("imagecontainer");
+				
+				var h = window.innerHeight - document.getElementById('header').offsetHeight;
+				
+				if(imgwidth <= imagecontainer.clientWidth * margin && imgheight <= h * margin){
+					canvastag.height = imgheight;
+					canvastag.width = imgwidth;				
+					ctx.drawImage(imgtag,0,0);
+					factor = 1;
+					return;
+				}
+				
+				factor = h * margin / imgheight;				
+				
+				if(imgwidth * factor > imagecontainer.clientWidth * margin) {
+					factor = imagecontainer.clientWidth * margin / imgwidth;
+				}
+				
+				scaleIt('canvascopy','myimage', factor);				
+			}
+			
+			
+			function draw() {
+				ddctx.clearRect(0, 0, ddcanvas.width, ddcanvas.height);
+				setImageSize();
+				
+				ddctx.fillStyle = textFillColor;
+				ddctx.strokeStyle = textStrokeColor;
+				ddctx.lineWidth = linewidth;
+				ddctx.font = textFontSize + 'pt ' + textFontFamily;
+				ddctx.lineJoin = "round";
+				
+				for (var i = 0; i < texts.length; i++) {
+					var text = texts[i];
+					if(drawborder == true) {
+						ddctx.strokeText(text.text, text.x, text.y);
+					}
+					ddctx.fillText(text.text, text.x, text.y);
+				}
+				
+				cropScale();
+			}
+			
+			function imageloaded() {
+				var imgtag = document.getElementById("myimage");
+				
+				var imgwidth = imgtag.clientWidth;
+				var imgheight = imgtag.clientHeight;	
+				
+				var canvastag = document.getElementById("canvascopy");
+				var ctx = canvastag.getContext("2d");
+				var imagecontainer = document.getElementById("imagecontainer");								
+				
+				setImageSize();
+				
+				var canvasheight = canvastag.height;
+				textFontSize = Math.round(canvasheight / 12);				
+				linewidth = Math.round(textFontSize / 10);
+				document.getElementById("fontsize").value = textFontSize;
+				document.getElementById("borderwidth").value = linewidth;
+				
+				imgtag.removeAttribute("title");
+				
+				cropScale();
+				
+				imageLoaded = true;
+			}
+			
+			function cropScale() {
+				scale('scaledCanvas', 'canvascopy', 200, 300);				
+				crop('scaledCanvas', 'cropped', 2 / 3);
+				
+				scale('scaledCanvasOlx', 'canvascopy', 216, 152);
+				crop('scaledCanvasOlx', 'croppedOlx', 216 / 152);
+				
+				
+				scale('scaledCanvasFB2', 'canvascopy', 206, 412);
+				crop('scaledCanvasFB2', 'croppedFB2', 206 / 412);
+				
+				scale('scaledCanvasFB5', 'canvascopy', 225, 225);
+				crop('scaledCanvasFB5', 'croppedFB5', 225 / 225);
+			}
+			
+			function scale(targetId, sourceId, targetImwidth, targetImheight) {
+				var sourceElement = document.getElementById(sourceId);
+				var scaleFactor;
+				
+				//scaleFactor = imheight / sourceElement.height;
+				
+				if(targetImheight > targetImwidth) {
+					scaleFactor = targetImheight / sourceElement.height;
+					} else {
+					scaleFactor = targetImwidth / sourceElement.width;
+				}
+				scaleIt(targetId, sourceId, scaleFactor);
+			}
+			
+			function scaleIt(targetId, sourceId, scaleFactor) {
+				var sourceElement = document.getElementById(sourceId);
+				var c, ctx;
+				
+				var targetElement = document.getElementById(targetId);
+				
+				if (typeof (targetElement) == "undefined" || targetElement == null) {
+					c = document.createElement("canvas");
+					} else {
+					c = targetElement;
+				}
+				
+				ctx = c.getContext('2d');
+				var w = sourceElement.width * scaleFactor;
+				var h = sourceElement.height * scaleFactor;
+				c.width = w;
+				c.height = h;
+				ctx.drawImage(sourceElement, 0, 0, w, h);
+			}
+			
+			function crop(inputImageId, outCanvasId, aspectRatio) {
+				var img = document.getElementById(inputImageId);
+				
+				var inputWidth = img.width;
+				var inputHeight = img.height;
+				
+				const inputImageAspectRatio = inputWidth / inputHeight;
+				let outputWidth = inputWidth;
+				let outputHeight = inputHeight;
+				if (inputImageAspectRatio > aspectRatio) {
+					outputWidth = inputHeight * aspectRatio;
+					} else if (inputImageAspectRatio < aspectRatio) {
+					outputHeight = inputWidth / aspectRatio;
+				}
+				
+				const outputX = (outputWidth - inputWidth) * .5;
+				const outputY = (outputHeight - inputHeight) * .5;
+				
+				var outputImage = document.getElementById(outCanvasId);
+				const ctx = outputImage.getContext('2d');
+				
+				ctx.drawImage(img, Math.round(outputX), Math.round(outputY));
+			}
+			
+			function addText(canvasId,button) {
+				initVars();
+				
+				var lx, ly;
+				var text;
+				
+				button.innerHTML = 'Modify text';
+				
+				var outputImage = document.getElementById(canvasId);	
+				const outctx = outputImage.getContext('2d');
+				
+				displayedText = document.getElementById("displayedText").value;
+				
+				draw();
+				setfontsize();
+				setoutlinecolor()
+				settextcolor();
+				
+				outctx.fillStyle = textFillColor;
+				outctx.strokeStyle = textStrokeColor;
+				outctx.lineWidth = linewidth;
+				outctx.font = textFontSize + 'pt ' + textFontFamily;
+				
+				if (texts.length == 0) {					
+					lx = Math.round(outputImage.width/2 - outctx.measureText(displayedText).width/2);										
+					ly = Math.round(outputImage.height / 2 + parseInt(textFontSize) / 2);
+					
+					text = {
+						text: displayedText,
+						x: lx,
+						y: ly
+					};
+					
+					texts.push(text);
+					
+					} else {
+					text = texts[0];
+					text.text = displayedText;
+					lx = text.x;
+					ly = text.y;
+					updateiftextnotvisible();
+				}				
+				
+				text.width = outctx.measureText(text.text).width;
+				text.height = parseInt(textFontSize);
+				
+				draw();				
+			}
+			
+			function centerHorizontally() {
+				if (texts.length > 0) {
+					let lx = Math.round(ddcanvas.width/2 - ddctx.measureText(texts[0].text).width/2);					
+					texts[0].x = lx;
+					draw();
+				}		
+			}
+			
+			function centerVertically() {				
+				if (texts.length > 0) {
+					let ly = Math.round(ddcanvas.height / 2 + parseInt(textFontSize) / 2);
+					texts[0].y = ly;
+					draw();
+				}
+			}
+			
+			function getOffset(element) {
+				if (!element.getClientRects().length) {
+					return {
+						top: 0,
+						left: 0
+					};
+				}
+				
+				let rect = element.getBoundingClientRect();
+				let win = element.ownerDocument.defaultView;
+				
+				return ({
+					top: rect.top + win.pageYOffset,
+					left: rect.left + win.pageXOffset
+				});
+			}
+			
+			function textHittest(x, y, textIndex) {
+				var text = texts[textIndex];
+				return (x >= text.x && x <= text.x + text.width && y >= text.y - text.height && y <= text.y);
+			}
+			
+			function handleMouseDown() {
+				
+				var rect = ddcanvas.getBoundingClientRect();
+				
+				var e = window.event;
+				e.preventDefault();
+				//startX = parseInt(e.clientX - offsetX);
+				//startY = parseInt(e.clientY - offsetY);
+				
+				startX = e.clientX - rect.left;
+				startY = e.clientY - rect.top;
+				
+				for (var i = 0; i < texts.length; i++) {
+					if (textHittest(startX, startY, i)) {
+						selectedText = i;
+					}
+				}
+			}			
+			
+			function handleMouseUp() {
+				var e = window.event;
+				e.preventDefault();
+				selectedText = -1;		
+			}
+			
+			function handleMouseOut() {
+				var e = window.event;
+				e.preventDefault();
+				selectedText = -1;
+			}
+			
+			function handleMouseMove() {
+				var e = window.event;
+				e.preventDefault();
+				
+				
+				var rect = ddcanvas.getBoundingClientRect();
+				
+				mouseX = e.clientX - rect.left;
+				mouseY = e.clientY - rect.top;
+				
+				for (var i = 0; i < texts.length; i++) {
+					if (textHittest(mouseX, mouseY, i)) {
+						ddcanvas.style.cursor = 'move';
+						} else {
+						ddcanvas.style.cursor = 'default';
+					}
+				}
+				
+				if (selectedText < 0) {					
+					return;
+				}
+				
+				var dx = mouseX - startX;
+				var dy = mouseY - startY;
+				startX = mouseX;
+				startY = mouseY;
+				
+				var text = texts[selectedText];
+				text.x += dx;
+				text.y += dy;
+				draw();
+			}
+			
+			function bodyload() {
+				loadFonts();
+				document.addEventListener("scroll", initVars);				
+				//draw();
+				document.querySelectorAll('details').forEach((el) => {
+					new Accordion(el);					
+				});
+			}
+			
+			function loadFonts() {
+				
+				var select = document.getElementById('fonts');
+				
+				const fontCheck = new Set([
+				// Windows 10
+				'Arial', 'Arial Black', 'Bahnschrift', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Comic Sans MS', 'Consolas', 'Constantia', 'Corbel', 'Courier New', 'Ebrima', 'Franklin Gothic Medium', 'Gabriola', 'Gadugi', 'Georgia', 'HoloLens MDL2 Assets', 'Impact', 'Ink Free', 'Javanese Text', 'Leelawadee UI', 'Lucida Console', 'Lucida Sans Unicode', 'Malgun Gothic', 'Marlett', 'Microsoft Himalaya', 'Microsoft JhengHei', 'Microsoft New Tai Lue', 'Microsoft PhagsPa', 'Microsoft Sans Serif', 'Microsoft Tai Le', 'Microsoft YaHei', 'Microsoft Yi Baiti', 'MingLiU-ExtB', 'Mongolian Baiti', 'MS Gothic', 'MV Boli', 'Myanmar Text', 'Nirmala UI', 'Palatino Linotype', 'Segoe MDL2 Assets', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Segoe UI Historic', 'Segoe UI Emoji', 'Segoe UI Symbol', 'SimSun', 'Sitka', 'Sylfaen', 'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Webdings', 'Wingdings', 'Yu Gothic',
+				// macOS
+				'American Typewriter', 'Andale Mono', 'Arial', 'Arial Black', 'Arial Narrow', 'Arial Rounded MT Bold', 'Arial Unicode MS', 'Avenir', 'Avenir Next', 'Avenir Next Condensed', 'Baskerville', 'Big Caslon', 'Bodoni 72', 'Bodoni 72 Oldstyle', 'Bodoni 72 Smallcaps', 'Bradley Hand', 'Brush Script MT', 'Chalkboard', 'Chalkboard SE', 'Chalkduster', 'Charter', 'Cochin', 'Comic Sans MS', 'Copperplate', 'Courier', 'Courier New', 'Didot', 'DIN Alternate', 'DIN Condensed', 'Futura', 'Geneva', 'Georgia', 'Gill Sans', 'Helvetica', 'Helvetica Neue', 'Herculanum', 'Hoefler Text', 'Impact', 'Lucida Grande', 'Luminari', 'Marker Felt', 'Menlo', 'Microsoft Sans Serif', 'Monaco', 'Noteworthy', 'Optima', 'Palatino', 'Papyrus', 'Phosphate', 'Rockwell', 'Savoye LET', 'SignPainter', 'Skia', 'Snell Roundhand', 'Tahoma', 'Times', 'Times New Roman', 'Trattatello', 'Trebuchet MS', 'Verdana', 'Zapfino',
+				].sort());
+				
+				(async() => {
+					await document.fonts.ready;
+					
+					const fontAvailable = new Set();
+					
+					for (const font of fontCheck.values()) {
+						if (document.fonts.check(`12px "${font}"`)) {
+							fontAvailable.add(font);
+							var opt = document.createElement('option');
+							opt.style.fontFamily = font;
+							opt.value = font;
+							opt.innerHTML = font;
+							select.appendChild(opt);
+						}
+					}
+					select.style.fontFamily = select.value;
+					textFontFamily = select.value;
+				})();
+			}
+			
+			function onFontSelected() {
+				var select = document.getElementById('fonts');
+				var value = select.value;
+				select.style.fontFamily = value;
+				textFontFamily = select.value;
+				updateiftextnotvisible();
+				draw();
+			}
+			
+			function fontsizeblur() {
+				
+				var sizeinput = document.getElementById("fontsize");
+				if (parseInt(sizeinput.value) < parseInt(sizeinput.min)) {
+					sizeinput.value = sizeinput.min;
+				} 
+				if (parseInt(sizeinput.value) > parseInt(sizeinput.max)) {
+					sizeinput.value = sizeinput.max;
+				}
+				setfontsize();
+			}
+			
+			function setfontsize() {
+				textFontSize = document.getElementById("fontsize").value;								
+				
+				if(texts.length > 0) {
+					updateiftextnotvisible();
+					draw();
+					texts[0].width = ddctx.measureText(texts[0].text).width;
+					texts[0].height = parseInt(textFontSize);					
+				}
+			}
+			
+			function toggleborder() {
+				var bordercolorel = document.getElementById("bordercolor");
+				var borderwidthel = document.getElementById("borderwidth");
+				var checkboxel = document.getElementById("showborder");
+				
+				if(checkboxel.checked == true) {
+					//linewidth = borderwidthel.value;
+					drawborder = true;
+					bordercolorel.disabled = false;
+					borderwidthel.disabled = false;
+					} else {
+					//linewidth = 0;
+					drawborder = false;
+					bordercolorel.disabled = true;
+					borderwidthel.disabled = true;
+				}
+				draw();
+			}
+			
+			function borderwidthblur() {
+				var borderwidthinput = document.getElementById("borderwidth");
+				if (parseInt(borderwidthinput.value) < parseInt(borderwidthinput.min)) {
+					borderwidthinput.value = borderwidthinput.min;
+				} 
+				if (parseInt(borderwidthinput.value) > parseInt(borderwidthinput.max)) {
+					borderwidthinput.value = borderwidthinput.max;
+				}
+				
+				setborderwidth();				
+			}
+			
+			function setborderwidth() { 
+				linewidth = document.getElementById("borderwidth").value;
+				
+				if(texts.length > 0) {
+					texts[0].width = ddctx.measureText(texts[0].text).width;
+					texts[0].height = parseInt(textFontSize);
+					updateiftextnotvisible();
+					draw();
+				}
+				
+			}
+			
+			function setoutlinecolor() {
+				textStrokeColor = document.getElementById("bordercolor").value;
+				draw();
+			}
+			
+			function settextcolor() {
+				textFillColor = document.getElementById("textcolor").value;
+				draw();
+			}
+			
+			function updateiftextnotvisible() {
+				if(texts.length == 0) return;				
+				if(texts[0].x + texts[0].width < 5) {
+					texts[0].x = 0;
+				}
+			}
+			
+			function startover() {
+				let confirmAction = confirm("Are you sure you want to start over?");
+				if (confirmAction) {
+					document.location.reload(true);
+				}
+			}
+			
+			function dropHandler(ev) {
+				ev.preventDefault();								
+				if(ev.dataTransfer.items.length>1) {
+					return;
+				}
+				
+				var dt = ev.dataTransfer;
+				var files = dt.files;
+				onFileSelected(files);				
+			}
+			
+			function dragOverHandler(ev) {
+				ev.preventDefault();
+			}
+			
+			function fileSelectClick() {
+				document.getElementById('imageinput').click();
+			}
+			
+			
+			
+			function showTooltip(event, tooltip) {
+				tooltip.querySelector('.tooltiptext').style.visibility = 'visible';
+			}
+			
+			function hideTooltip(event, tooltip) {
+				tooltip.querySelector('.tooltiptext').style.visibility = 'hidden';
+			}
+			
+			function handleEscapeKey(event) {
+				if (event.key === 'Escape') {
+					const tooltips = document.querySelectorAll('.tooltip');
+					for (let i = 0; i < tooltips.length; i++) {
+						hideTooltip(event, tooltips[i]);
+					}
+				}
+			}
+			
+			document.addEventListener('keydown', handleEscapeKey);
+			
+			function downloadImage() {				
+				var invfactor = 1/factor;
+				var lx = texts[0].x;
+				var ly = texts[0].y;
+				var invlx = Math.round(lx * invfactor);
+				var invly = Math.round(ly * invfactor);
+				var invfontsize = Math.round(textFontSize * invfactor);
+				var invborder = Math.round(linewidth * invfactor);
+				var img = document.getElementById('myimage');
+				var canvas = document.getElementById('fullsizeimagewithtext');
+				canvas.width = img.width;
+				canvas.height = img.height;
+				var ctx = canvas.getContext('2d');
+				ctx.fillStyle = textFillColor;
+				ctx.strokeStyle = textStrokeColor;
+				ctx.lineWidth = invborder;
+				ctx.font = invfontsize + 'pt ' + textFontFamily;
+				ctx.drawImage(img, 0, 0);
+				var text = texts[0];
+				if(drawborder == true) {
+					ctx.strokeText(text.text, invlx, invly);
+				}
+				ctx.fillText(text.text, invlx, invly);
+				canvas.toBlob(function(blob) {
+					var url = URL.createObjectURL(blob);
+					var downloadLink = document.createElement("a");
+					downloadLink.download = "photo.jpg";
+					downloadLink.href = url;
+					document.body.appendChild(downloadLink);
+					downloadLink.click();
+					document.body.removeChild(downloadLink);
+					URL.revokeObjectURL(url);
+				}, "image/jpeg");
+			}
+			
+			function validateNumberInput(event) {
+				const allowedKeys = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 9, 37, 38, 39, 40, 8, 46];
+				if (!allowedKeys.includes(event.keyCode)) {
+					event.preventDefault();
+					return false;
+				}
+				return true;
+			}
+			
+			
+		</script>
+		
+		<body>
+			<header id="header">				
+				<a href="/"><img class="header-image" src="maketext.io-AveriaLibra-font-withPlus.svg"></a>	
+			</header>
+			<div id="main" role="main">
+				<div id="initwrapper">	
+					<h1>Add text to photos online!</h1>
+					<div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">				
+						<div>
+							<div><img src="upload-icon.svg" width="40" height="40" alt="">
+							</div>
+							<p>Drag an image here</p>
+							<p>or</p>
+							<div><button class="material" onclick="fileSelectClick();">Browse images</button></div>						
+							<input type="file" id="imageinput" onchange="onFileSelected(this.files)" accept="image/*">
+						</div>
+					</div>
+					<div id="info">
+						Add text to your photos online. See previews for variouse websites, like: Vinted or OLX.
+					</div>
+				</div>
+				
+				<div class="editwrapper">
+					<div id="imageedit" class="row">			
+						<div id="imagecontainer" class="column">
+							<div class="card">
+								<img id="myimage" class="offscreen" alt="" onload="imageloaded()">
+								<h2>Twoje zdjęcie w oryginalnych proporcjach</h2>
+								<canvas id="canvascopy" class="center"></canvas>
+								<canvas id="fullsizeimagewithtext" class="offscreen"></canvas>
+								
+								<div class="offscreen">
+									<canvas id="scaledCanvas"></canvas>
+								</div>
+								<div class="offscreen">
+									<canvas id="scaledCanvasOlx"></canvas>
+								</div>
+								<div class="offscreen">
+									<canvas id="scaledCanvasFB2"></canvas>
+								</div>
+								<div class="offscreen">
+									<canvas id="scaledCanvasFB5"></canvas>
+								</div>
+							</div>
+						</div>
+						
+						<div class="column">							
+							<div class="card">
+								<h2>Dodaj tekst</h2>
+								
+								<div class="textline">								
+									<label for="displayedText">Tekst</label>
+									<input type="text" id="displayedText" autocomplete="off">
+									<button onclick="addText('canvascopy',this)" class="material">Add text</button>								
+								</div>
+								
+								<div id="detailswrapper">
+									<details>
+										<summary>Opcje tekstu</summary>
+										
+										<div id="textoptions" class="textoptions">						
+											
+											<div class="leftright">
+												<div style="width: 50%" class="vcenter">
+												<label for="textcolor">Kolor tekstu</label></div>
+												<div><input autocomplete="off" type="color" class="editoptions" id="textcolor" name="textcolor" value="#000000" oninput="settextcolor()"></div>
+											</div>
+											
+											<div class="leftright">
+												<div style="width: 50%">
+												<label for="showborder">Wyświetl tekst z ramką</label></div>
+												<div class="vcenter">
+												<input id="showborder" type="checkbox" checked onchange="toggleborder()"></div>
+											</div>
+											
+											<div class="leftright">
+												<div style="width: 50%" class="vcenter">
+												<label for="borderwidth">Grubość ramki</label></div>
+												<div><input type="number" onkeydown="return validateNumberInput(event)" onpaste="return false;" class="editoptions" id="borderwidth" value="8" min="1" max="25" onblur="borderwidthblur()" onchange="setborderwidth()"></div>
+											</div>
+											
+											<div class="leftright">
+												<div style="width: 50%" class="vcenter">
+												<label for="bordercolor">Kolor ramki tekstu</label></div>
+												<div><input autocomplete="off" type="color" class="editoptions" id="bordercolor" name="bordercolor" value="#ffffff" oninput="setoutlinecolor()"></div>
+											</div>
+											
+											<div class="leftright">
+												<div style="width: 50%" class="vcenter" class="vcenter">
+												<label for="fontsize">Rozmiar czcionki</label></div>
+												<div><input type="number" onkeydown="return validateNumberInput(event)" onpaste="return false;" class="editoptions" id="fontsize" value="24" min="10" max="100" onblur="fontsizeblur()" onchange="setfontsize()"></div>						
+											</div>
+											
+											<div class="leftright">
+												<div style="width: 50%" class="vcenter">
+												<label for="fonts">Krój czcionki</label></div>
+												<div><select id="fonts" class="editoptions" onchange="onFontSelected()">
+												</select></div>
+											</div>
+											
+											<div class="leftright">
+												<div style="width: 50%" class="vcenter">
+												<label>Wyrównaj</label></div>
+												<div>
+													<button onclick="centerHorizontally()" class="material alignb"><img src="horizontal_align_center.svg"></button>
+													<button onclick="centerVertically()" class="material alignb "><img src="vertical_align_center.svg"></button>
+												</div>
+											</div>
+											
+											
+										</div>
+									</details>
+								</div>
+								<div>
+									<button class="material" id="downloadBtn" onclick="downloadImage()">Zapisz zdjęcie</button>
+									<button onclick="startover()" class="material">Start over</button>
+								</div>
+							</div>
+							
+							<svg hidden class="offscreen">
+								<symbol id="icon-information" viewBox="0 0 24 24">
+									<path fill-rule="evenodd" d="M0 12C0 5.373 5.373 0 12 0c6.625.006 11.994 5.375 12 12 0 6.627-5.373 12-12 12S0 18.627 0 12zm2 0c0 5.523 4.477 10 10 10 5.52-.006 9.994-4.48 10-10 0-5.523-4.477-10-10-10S2 6.477 2 12zm10-2a1 1 0 011 1v6a1 1 0 01-2 0v-6a1 1 0 011-1zm1-3a1 1 0 11-2 0 1 1 0 012 0z"></path>
+								</symbol>
+							</svg>
+							
+							
+							<div class="card">
+								<h2>Podgląd miniaturek</h2>
+								<div class="thumbnailscontainer">								
+									<div id="croppedDiv" class="thumbnail">
+										<h3>Vinted</h3>
+										<canvas class="thumb" width="200" height="300" id="cropped" ></canvas>							
+									</div>
+									
+									<div id="croppedDivOlx" class="thumbnail">
+										<h3>Olx</h3>
+										<canvas class="thumb" width="216" height="152" id="croppedOlx"></canvas>							
+									</div>
+									
+									<div id="croppedDivFB2" class="thumbnail">
+										<h3>Facebook 2 </h3>
+										
+										<span class="tooltip"
+										onmouseover="showTooltip(event, this.parentNode);"
+										onmouseout="hideTooltip(event, this.parentNode);">
+											<svg tabindex="0" role="tooltip" focusable="false" width="20" height="20" aria-hidden="true"
+											onfocus="showTooltip(event, this.parentNode);"
+											onblur="hideTooltip(event, this.parentNode);">
+											<use xlink:href="#icon-information"></use>
+										</svg>
+										<span class="tooltiptext">This is a tooltip</span></span>
+										
+										
+										<canvas class="thumb" width="206" height="412" id="croppedFB2"></canvas>							
+									</div>
+									
+									<div id="croppedDivFB5" class="thumbnail">
+										<h3>Facebook 5</h3>
+										<canvas class="thumb" width="225" height="225" id="croppedFB5"></canvas>							
+									</div>							
+								</div>	
+							</div>
+						</div>
+					</div>
+				</div>
+				<footer></footer>
+			</body>
+		</html>																																																																																																			
