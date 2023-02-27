@@ -14,6 +14,10 @@
 	outline: none;
 }
 
+html {
+    font-size: 100%;
+} 
+
 *:focus-visible {
 	outline: max(2px, 0.15em) solid black;
 	outline-offset: max(2px, 0.15em);
