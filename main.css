@@ -99,6 +99,12 @@ canvas {
 	margin-right: 1rem;
 }
 
+@media (-webkit-min-device-pixel-ratio: 2), 
+(min-resolution: 192dpi) {   
+	margin-left: 0;
+	margin-right: 0;
+}
+
 .uplimage {
 	width: 2.5rem;
 	height: 2.5rem;
