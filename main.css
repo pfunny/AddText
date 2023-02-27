@@ -18,6 +18,13 @@ html {
     font-size: 100%;
 } 
 
+@media (-webkit-min-device-pixel-ratio: 2), 
+       (min-resolution: 192dpi) {   
+  html { 
+    font-size: 150%; 
+  } 
+}
+
 *:focus-visible {
 	outline: max(2px, 0.15em) solid black;
 	outline-offset: max(2px, 0.15em);
