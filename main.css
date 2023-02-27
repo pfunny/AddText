@@ -344,6 +344,14 @@ details {
 	margin-right: 2rem;
 }
 
+@media (-webkit-min-device-pixel-ratio: 2), 
+       (min-resolution: 192dpi) {   
+  .editwrapper {
+	margin-left: 0rem;
+	margin-right: 0rem;
+  }
+}
+
 summary:before {
 	content: '';
 	border-width: .4rem;
