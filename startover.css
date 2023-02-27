@@ -11,7 +11,7 @@
     border-radius: 0.25rem;
     padding: 0 1rem;
     /*min-width: 64px;*/
-    height: 2.25rem;
+    height: 3rem;
     vertical-align: middle;
     text-align: center;
     text-overflow: ellipsis;
@@ -22,7 +22,7 @@
     font-family: var(--pure-material-font, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
     font-size: 0.875rem;
     font-weight: 700;
-    line-height: 2.25rem;
+    line-height: 3rem;
     overflow: hidden;
     outline: none;
     cursor: pointer;
