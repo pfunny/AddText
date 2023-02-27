@@ -85,18 +85,10 @@ canvas {
 	margin-right: 1rem;
 }
 
-
-/*select,
-	input[type=text],
-	input[type=color],
-	input[type=number] {
-	height: 2rem;
-	font-size: 1rem;
-	border-bottom: 0.1em solid var(--teal);
-	border-top: 0;
-	border-left: 0;
-	border-right: 0;
-}*/
+.uplimage {
+	width: 2.5rem;
+	height: 2.5rem;
+}
 
 select,
 input[type=text],
