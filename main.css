@@ -104,12 +104,23 @@ input[type=color],
 input[type=number] {
 	height: 2rem;
 	font-size: 1rem;
+	width: 12rem;
 	/*border-bottom: 0.1em solid var(--teal);
 		border-top: 0;
 		border-left: 0;
 	border-right: 0;*/
 	border: 1px solid var(--inputborder);
 	border-bottom-width: 2px;
+}
+
+
+@media (-webkit-min-device-pixel-ratio: 2), 
+(min-resolution: 192dpi) {   
+	input[type=text],
+	input[type=color],
+	input[type=number] {
+		width: 10rem;
+	}
 }
 
 .textline {
@@ -248,12 +259,6 @@ h1 {
 	color: var(--teal);
 }
 
-svg.loading {
-	width: 36px;
-	height: 36px;  
-	display: none;
-	vertical-align: middle;
-}
 
 .row:after {
 	content: "";
