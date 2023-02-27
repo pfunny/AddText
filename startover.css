@@ -28,8 +28,8 @@
     cursor: pointer;
     transition: box-shadow 0.2s;
 	text-decoration: none;
-	margin-left: 2rem;
-	margin-right: 2rem;
+	margin-left: 0.5rem;
+	margin-right: 0.5rem;
 }
 
 .material::-moz-focus-inner {
