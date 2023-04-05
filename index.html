@@ -51,17 +51,23 @@
 				
 				if (!listenersAttached) {
 					ddcanvas.addEventListener("mousedown", function () {
-						handleMouseDown()
+						handleDown()
 					});
 					ddcanvas.addEventListener("mouseup", function () {
-						handleMouseUp()
+						handleUp()
 					});
 					ddcanvas.addEventListener("mousemove", function () {
-						handleMouseMove()
+						handleMove()
 					});
 					ddcanvas.addEventListener("mouseout", function () {
-						handleMouseOut()
+						handleOut()
 					});
+					
+					ddcanvas.addEventListener('touchstart', handleDown, false);
+					ddcanvas.addEventListener('touchend', handleUp, false);
+					ddcanvas.addEventListener('touchcancel', handleOut, false);
+					ddcanvas.addEventListener('touchmove', handleMove, false);
+					
 					listenersAttached = true;
 				}								
 			}					
@@ -358,7 +364,7 @@
 				return (x >= text.x && x <= text.x + text.width && y >= text.y - text.height && y <= text.y);
 			}
 			
-			function handleMouseDown() {
+			function handleDown() {
 				
 				var rect = ddcanvas.getBoundingClientRect();
 				
@@ -377,19 +383,19 @@
 				}
 			}			
 			
-			function handleMouseUp() {
+			function handleUp() {
 				var e = window.event;
 				e.preventDefault();
 				selectedText = -1;		
 			}
 			
-			function handleMouseOut() {
+			function handleOut() {
 				var e = window.event;
 				e.preventDefault();
 				selectedText = -1;
 			}
 			
-			function handleMouseMove() {
+			function handleMove() {
 				var e = window.event;
 				e.preventDefault();
 				
