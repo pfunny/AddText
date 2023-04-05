@@ -50,18 +50,23 @@
 				ddctx = ddcanvas.getContext("2d");				
 				
 				if (!listenersAttached) {
-					ddcanvas.addEventListener("mousedown", function () {
-						handleDown()
-					});
-					ddcanvas.addEventListener("mouseup", function () {
-						handleUp()
-					});
-					ddcanvas.addEventListener("mousemove", function () {
-						handleMove()
-					});
-					ddcanvas.addEventListener("mouseout", function () {
-						handleOut()
-					});
+					ddcanvas.addEventListener("mousedown", function (e) {
+						handleDown(e)
+						});
+						ddcanvas.addEventListener("mouseup", function (e) {
+						handleUp(e)
+						});
+						ddcanvas.addEventListener("mousemove", function (e) {
+						handleMove(e)
+						});
+						ddcanvas.addEventListener("mouseout", function (e) {
+						handleOut(e)
+					})
+					
+					/*ddcanvas.addEventListener("mousedown", handleDown);
+					ddcanvas.addEventListener("mouseup", handleUp);
+					ddcanvas.addEventListener("mousemove", handleMove);
+					ddcanvas.addEventListener("mouseout", handleOut);*/
 					
 					ddcanvas.addEventListener('touchstart', handleDown, false);
 					ddcanvas.addEventListener('touchend', handleUp, false);
@@ -80,11 +85,11 @@
 				imgtag.title = selectedFile.name;
 				
 				reader.onload = function (event) {
-					imgtag.src = event.target.result;
-					document.getElementById('imageedit').style.display = 'block';
-					document.getElementById('initwrapper').style.display = 'none';
-				};
-				reader.readAsDataURL(selectedFile);						
+				imgtag.src = event.target.result;
+			document.getElementById('imageedit').style.display = 'block';
+			document.getElementById('initwrapper').style.display = 'none';
+			};
+			reader.readAsDataURL(selectedFile);						
 			}
 			
 			function windowResize() {	
@@ -860,4 +865,4 @@
 				</div>
 				<footer></footer>
 			</body>
-		</html>																																																																																																							
+		</html>																																																																																																									
