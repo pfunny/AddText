@@ -364,17 +364,20 @@
 				return (x >= text.x && x <= text.x + text.width && y >= text.y - text.height && y <= text.y);
 			}
 			
-			function handleDown() {
-				
-				var rect = ddcanvas.getBoundingClientRect();
-				
+			function handleDown() {				
+				var rect = ddcanvas.getBoundingClientRect();				
 				var e = window.event;
-				e.preventDefault();
-				//startX = parseInt(e.clientX - offsetX);
-				//startY = parseInt(e.clientY - offsetY);
-				
-				startX = e.clientX - rect.left;
-				startY = e.clientY - rect.top;
+				var clientX, clientY;
+				e.preventDefault();				
+				if (e.type === 'touchstart') {
+					clientX = e.touches[0].clientX;
+					clientY = e.touches[0].clientY;
+					} else {
+					clientX = e.clientX;
+					clientY = e.clientY;
+				}
+				startX = clientX - rect.left;
+				startY = clientY - rect.top;
 				
 				for (var i = 0; i < texts.length; i++) {
 					if (textHittest(startX, startY, i)) {
@@ -395,7 +398,7 @@
 				selectedText = -1;
 			}
 			
-			function handleMove() {
+			/*function handleMove() {
 				var e = window.event;
 				e.preventDefault();
 				
@@ -406,6 +409,42 @@
 				mouseY = e.clientY - rect.top;
 				
 				for (var i = 0; i < texts.length; i++) {
+				if (textHittest(mouseX, mouseY, i)) {
+				ddcanvas.style.cursor = 'move';
+				} else {
+				ddcanvas.style.cursor = 'default';
+				}
+				}
+				
+				if (selectedText < 0) {					
+				return;
+				}
+				
+				var dx = mouseX - startX;
+				var dy = mouseY - startY;
+				startX = mouseX;
+				startY = mouseY;
+				
+				var text = texts[selectedText];
+				text.x += dx;
+				text.y += dy;
+				draw();
+			}*/
+			function handleMove(e) {
+				var rect = ddcanvas.getBoundingClientRect();
+				e.preventDefault();
+				var clientX, clientY;
+				if (e.type === 'touchmove') {
+					clientX = e.touches[0].clientX;
+					clientY = e.touches[0].clientY;
+					} else {
+					clientX = e.clientX;
+					clientY = e.clientY;
+				}
+				mouseX = clientX - rect.left;
+				mouseY = clientY - rect.top;
+				
+				for (var i = 0; i < texts.length; i++) {
 					if (textHittest(mouseX, mouseY, i)) {
 						ddcanvas.style.cursor = 'move';
 						} else {
@@ -413,7 +452,7 @@
 					}
 				}
 				
-				if (selectedText < 0) {					
+				if (selectedText < 0) {
 					return;
 				}
 				
@@ -802,8 +841,8 @@
 											<svg tabindex="0" role="tooltip" focusable="false" width="20" height="20" aria-hidden="true"
 											onfocus="showTooltip(event, this.parentNode);"
 											onblur="hideTooltip(event, this.parentNode);">
-											<use xlink:href="#icon-information"></use>
-										</svg>
+												<use xlink:href="#icon-information"></use>
+											</svg>
 										<span class="tooltiptext">This is a tooltip</span></span>
 										
 										
@@ -821,4 +860,4 @@
 				</div>
 				<footer></footer>
 			</body>
-		</html>																																																																																																			
+		</html>																																																																																																							
