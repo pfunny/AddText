@@ -56,7 +56,6 @@ summary:focus-visible {
 	}
 }
 
-
 body {
 	font-family: 'Montserrat', Verdana, Arial, Helvetica, sans-serif;	
 	margin: 0;
@@ -98,15 +97,14 @@ input[type=number] {
 	height: 2rem;
 	font-size: 1rem;
 	width: 10rem;
+	border-radius: 4px;
 	border: 1px solid var(--inputborder);
-	border-bottom-width: 2px;
 }
-
 
 select,
 input[type=text],
 input[type=number] {
-	padding-left: 1rem;
+	padding-left: 0.3rem;
 }
 
 
